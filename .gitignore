@@ -1,0 +1,29 @@
+# ===============================================
+# Abzar Shargh - Git ignore rules
+# ===============================================
+
+# --- Runtime data ---
+# ignore everything in data/, but keep the live DB (store.sqlite)
+data/*
+!data/store.sqlite
+
+# --- Backups / archives ---
+*.bak
+*.bak-*
+*.zip
+
+# --- User uploads ---
+uploads/
+
+# --- Logs & caches ---
+*.log
+data/logs/
+data/rl/
+data/cache-*.xml
+data/login_attempts.json
+
+# --- Common junk ---
+.DS_Store
+Thumbs.db
+*.swp
+*~

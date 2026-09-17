@@ -1,0 +1,9 @@
+Vazirmatn-Black.woff2
+Vazirmatn-Bold.woff2
+Vazirmatn-ExtraBold.woff2
+Vazirmatn-ExtraLight.woff2
+Vazirmatn-Light.woff2
+Vazirmatn-Medium.woff2
+Vazirmatn-Regular.woff2
+Vazirmatn-SemiBold.woff2
+Vazirmatn-Thin.woff2

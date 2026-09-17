@@ -1,0 +1,79 @@
+﻿# محافظت از پوشه‌های حساس (Apache)
+# جلوگیری از دسترسی مستقیم به دیتابیس، سورس و اسکریپت‌ها
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    # مسدودسازی دسترسی مستقیم به پوشه‌های داخلی
+    RewriteRule ^(data|includes|sql)/ - [F,L]
+
+    # ---- URL تمیز صفحات ساخته‌شده با Page Builder: /p/{slug} -> p.php ----
+    RewriteRule ^p/([^/]+)/?$ p.php?slug=$1 [L,QSA]
+</IfModule>
+
+# عدم نمایش فایل‌های نقطه‌ای (مثل .env)
+<FilesMatch "^\.">
+    Require all denied
+</FilesMatch>
+
+# جلوگیری از لیست‌کردن پوشه‌ها
+Options -Indexes
+
+# ---- صفحات خطای سفارشی (فارسی، با قالب سایت) ----
+# نکته: مسیر ErrorDocument مطلق از ریشهٔ دامنه است؛ در هاست واقعی که سایت در ریشه نصب است،
+# همین /404.php درست است. اگر در ساب‌فولدر نصب شد، مسیر را با نام پوشه تنظیم کنید.
+ErrorDocument 404 /404.php
+ErrorDocument 403 /403.php
+ErrorDocument 500 /500.php
+
+# برای نصب در ساب‌فولدر: مسیرهای نسبی پشتیبانی نمی‌شوند؛ خطوط بالا را ویرایش کنید.
+# جایگزین خودکار با mod_rewrite (هر عمقی):
+<IfModule mod_rewrite.c>
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_URI} !\.(css|js|jpg|jpeg|png|webp|gif|svg|ico|woff2?|ttf|map)$ [NC]
+    RewriteRule ^ 404.php [L]
+</IfModule>
+
+# ---- بهینه‌سازی عملکرد: کش مرورگر + فشرده‌سازی ----
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType text/css "access plus 30 days"
+    ExpiresByType application/javascript "access plus 30 days"
+    ExpiresByType image/jpeg "access plus 30 days"
+    ExpiresByType image/png "access plus 30 days"
+    ExpiresByType image/webp "access plus 30 days"
+    ExpiresByType image/svg+xml "access plus 30 days"
+    ExpiresByType font/woff2 "access plus 365 days"
+    ExpiresByType font/woff "access plus 365 days"
+</IfModule>
+
+<IfModule mod_headers.c>
+    <FilesMatch "\.(css|js|jpg|jpeg|png|webp|gif|svg|woff2?|ico)$">
+        Header set Cache-Control "public, max-age=2592000"
+    </FilesMatch>
+</IfModule>
+
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/css application/javascript application/json image/svg+xml text/plain text/xml
+</IfModule>
+
+# === Security headers (نوامبر ۲۰۲۶) ===
+<IfModule mod_headers.c>
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    Header always set Permissions-Policy "geolocation=(), microphone=(), camera=(), payment=(self)"
+    Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+    # CSP — سایت فروشگاهی، اجازهٔ CDN های متداول، فریم فقط از خود + اینماد
+    Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://www.google.com https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com; img-src 'self' data: https:; font-src 'self' https://fonts.gstatic.com data:; connect-src 'self' https://api.payamak-panel.com https://rest.payamak-panel.com https://www.zarinpal.com https://bitpay.ir; frame-src 'self' https://www.zarinpal.com https://bitpay.ir https://trustseal.enamad.ir https://logo.samandehi.ir; object-src 'none'; base-uri 'self'; form-action 'self'"
+</IfModule>
+
+# === بستن متدهای خطرناک ===
+<LimitExcept GET POST HEAD>
+    Require all denied
+</LimitExcept>
+
+# === مخفی‌سازی فایل‌های حساس ===
+<FilesMatch "(^\.env|^\.git|composer\.(json|lock)|package\.(json|lock)|\.htaccess|\.htpasswd|config\.php|phpinfo\.php|.*\.sql|.*\.log|.*\.bak|.*\.zip|.*\.tar\.gz)$">
+    Require all denied
+</FilesMatch>
